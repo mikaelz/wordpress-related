@@ -322,7 +322,7 @@ class Vubpay {
 	 */
 	public function process_request() {
 
-		if ( empty( $_GET['action'] ) || empty( $_POST['amunt'] ) )
+		if ( empty( $_GET['action'] ) || empty( $_POST['amount'] ) )
 			return;
 
 		$currencies = array(
