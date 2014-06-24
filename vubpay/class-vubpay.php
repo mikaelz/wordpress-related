@@ -59,7 +59,11 @@ class Vubpay {
 
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
 		add_action( 'init', array( $this, 'reg_cpt' ) );
-		add_filter( 'the_content', array( $this, 'process_request' ) );
+
+		if ( ! empty( $_GET['action'] ) && ! empty( $_POST['amount'] ) )
+			add_filter( 'the_content', array( $this, 'process_request' ) );
+		if ( ! empty( $_POST['Response'] ) && ! empty( $_POST['merchantID'] ) )
+			add_filter( 'the_content', array( $this, 'process_response' ) );
 
 	}
 
@@ -98,23 +102,21 @@ class Vubpay {
 	 */
 	public function reg_cpt() {
 
-		$slug = basename( dirname( __FILE__ ) );
-
 		$labels = array(
-			'name'               => _x( 'VÚB eCard Payments', 'post type general name', $slug ),
-			'singular_name'      => _x( 'VÚB eCard Payment', 'post type singular name', $slug ),
-			'menu_name'          => _x( 'VÚB eCard Payments', 'admin menu', $slug ),
-			'name_admin_bar'     => _x( 'VÚB eCard Payment', 'add new on admin bar', $slug ),
-			'add_new'            => _x( 'Add New', 'payment', $slug ),
-			'add_new_item'       => __( 'Add New Payment', $slug ),
-			'new_item'           => __( 'New Payment', $slug ),
-			'edit_item'          => __( 'Edit Payment', $slug ),
-			'view_item'          => __( 'View Payment', $slug ),
-			'all_items'          => __( 'All Payments', $slug ),
-			'search_items'       => __( 'Search Payments', $slug ),
-			'parent_item_colon'  => __( 'Parent Payments:', $slug ),
-			'not_found'          => __( 'No payments found.', $slug ),
-			'not_found_in_trash' => __( 'No payments found in Trash.', $slug )
+			'name'               => _x( 'VÚB eCard Payments', 'post type general name', $this->plugin_slug ),
+			'singular_name'      => _x( 'VÚB eCard Payment', 'post type singular name', $this->plugin_slug ),
+			'menu_name'          => _x( 'VÚB eCard Payments', 'admin menu', $this->plugin_slug ),
+			'name_admin_bar'     => _x( 'VÚB eCard Payment', 'add new on admin bar', $this->plugin_slug ),
+			'add_new'            => _x( 'Add New', 'payment', $this->plugin_slug ),
+			'add_new_item'       => __( 'Add New Payment', $this->plugin_slug ),
+			'new_item'           => __( 'New Payment', $this->plugin_slug ),
+			'edit_item'          => __( 'Edit Payment', $this->plugin_slug ),
+			'view_item'          => __( 'View Payment', $this->plugin_slug ),
+			'all_items'          => __( 'All Payments', $this->plugin_slug ),
+			'search_items'       => __( 'Search Payments', $this->plugin_slug ),
+			'parent_item_colon'  => __( 'Parent Payments:', $this->plugin_slug ),
+			'not_found'          => __( 'No payments found.', $this->plugin_slug ),
+			'not_found_in_trash' => __( 'No payments found in Trash.', $this->plugin_slug )
 		);
 
 		$args = array(
@@ -124,7 +126,7 @@ class Vubpay {
 			'show_ui'            => true,
 			'show_in_menu'       => true,
 			'query_var'          => true,
-			'rewrite'            => array( 'slug' => $slug ),
+			'rewrite'            => array( 'slug' => $this->plugin_slug ),
 			'capability_type'    => 'post',
 			'capabilities'       => array( 'create_posts' => true ),
 			'map_meta_cap'       => false, // Disable Edit/Delete
@@ -133,7 +135,7 @@ class Vubpay {
 			'menu_position'      => null,
 			'supports'           => array( 'title', 'editor', 'author', 'excerpt', 'comments' )
 		);
-		register_post_type( $slug, $args );
+		register_post_type( $this->plugin_slug, $args );
 
 		$labels = array(
 			'name'                       => _x( 'Statuses', 'taxonomy general name' ),
@@ -163,7 +165,7 @@ class Vubpay {
 			'query_var'             => true,
 			'rewrite'               => array( 'slug' => 'status' ),
 		);
-		register_taxonomy( 'status', $slug, $args );
+		register_taxonomy( 'status', $this->plugin_slug, $args );
 
 		$statuses = array(
 			'pending' => 'Pending payments status',
@@ -322,28 +324,29 @@ class Vubpay {
 	 */
 	public function process_request() {
 
-		if ( empty( $_GET['action'] ) || empty( $_POST['amount'] ) )
-			return;
-
 		$currencies = array(
-			978 => 'EUR',
-			203 => 'CZK',
-			348 => 'HUF',
-			985 => 'PLN',
+			978 => 'EUR', 203 => 'CZK',
+			348 => 'HUF', 985 => 'PLN',
 		);
 
 		$valid_lang = array( 'en', 'hu', 'sk', 'cz' );
 
-		$lang        = in_array( $_POST['lang'], $valid_lang ) ? esc_html( $_POST['lang'] ) : '';
-		$currency    = in_array( $_POST['currency'], array_keys( $currencies ) ) ? intval( $_POST['currency'] ) : '';
+		$lang        = in_array( $_POST['lang'], $valid_lang ) ? esc_html( $_POST['lang'] ) : 'en';
+		$currency    = in_array( $_POST['currency'], array_keys( $currencies ) ) ? intval( $_POST['currency'] ) : 978;
 		$amount      = ! empty( $_POST['amount'] ) ? intval( $_POST['amount'] ) : '';
 		$description = ! empty( $_POST['description'] ) ? esc_html( $_POST['description'] ) : '';
 
+		foreach ( $_SERVER as $key => $value )
+			$server_data .= "$key: $value\n";
+		foreach ( $_REQUEST as $key => $value )
+			$request_data .= "$key: $value\n";
+
 		// Save payment request
 		$post = array(
-			'post_title' => __( 'Payment ', $this->plugin_slug ),
-			'post_content' => "$amount {$currencies[$currency]}\n$description",
-			'post_type' => $this->plugin_slug,
+			'post_title'    => __( 'Payment ', $this->plugin_slug ),
+			'post_content'  => "REQUEST DATA\n$request_data\n-----\n\n$server_data\n-----\n",
+			'post_type'     => $this->plugin_slug,
+			'post_status'   => 'publish',
 			'post_category' => array( 'pending' ),
 		);
 
@@ -398,7 +401,7 @@ class Vubpay {
 				<button type="submit">' . __( 'Continue to the payment gateway', $this->plugin_slug ) . '</button>
 			</form>
 		</center>
-		<script>//setTimeout("document.vubecard.submit()", 200);</script>';
+		<script>setTimeout("document.vubecard.submit()", 200);</script>';
 
 	}
 
@@ -413,33 +416,34 @@ class Vubpay {
 		foreach ( $_REQUEST as $key => $value )
 			$request_data .= "$key: $value\n";
 
-		switch ( $_REQUEST['Response'] ) {
-			case 'Approved':
-				$msg = __( '<div id="message" class="updated fade"><p>Payment successful. Thank you. Have a nice day.</p></div>', $this->plugin_slug );
+		switch ( strtolower( $_REQUEST['Response'] ) ) {
+			case 'approved':
+				$msg = __( '<div id="message" class="success"><p>Payment successful. Thank you. Have a nice day.</p></div>', $this->plugin_slug );
 				break;
 		
-			case 'Declined':
-				$msg = '<div id="message" class="error fade"><p>Payment was declined. ' . sanitize_text_field( $_POST['ErrMsg'] ) . '</p></div>';
+			case 'declined':
+				$msg = '<div id="message" class="error"><p>Payment was declined. ' . sanitize_text_field( $_POST['ErrMsg'] ) . '</p></div>';
 				break;
 		
-			case 'Error':
-				$msg = '<div id="message" class="error fade"><p>Payment error. ' . sanitize_text_field( $_POST['ErrMsg'] ) . '</p></div>';
+			case 'error':
+				$msg = '<div id="message" class="error"><p>Payment error. ' . sanitize_text_field( $_POST['ErrMsg'] ) . '</p></div>';
 				break;
 		
 			default:
-				$msg = __( '<div id="message" class="error fade"><p>Payment failed. Unknown response from bank gateway.</p></div>', $this->plugin_slug );
+				$msg = __( '<div id="message" class="error"><p>Payment failed. Unknown response from bank gateway.</p></div>', $this->plugin_slug );
 		}
 
 		// Save response
 		$post = array(
-			'post_title' => __( 'Payment ', $this->plugin_slug ) . $order_id,
-			'post_content' => "$request_data\n\n$server_data",
-			'post_status' => 'private',
-			'post_type' => $this->plugin_slug,
-			'post_category' => '', // @TODO add taxonomy Status for $_REQUEST['Response'] Approved | Error | Other ?
+			'ID'            => $order_id,
+			'post_title'    => __( 'Payment ', $this->plugin_slug ) . $order_id,
+			'post_content'  => get_post( $order_id )->post_content . "-----\nRESPONSE DATA\n$request_data\n-----\n\n$server_data",
+			'post_password' => sanitize_text_field( $_POST['HASH'] ),
 		);
 
-		wp_insert_post( $post );
+		wp_update_post( $post );
+
+		return $msg;
 
 	}
 

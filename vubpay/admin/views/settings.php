@@ -42,7 +42,7 @@
 				<th scope="row"><label for="ok_url"><?php _e( 'URL for success payment', $this->plugin_slug ); ?></label></th>
 				<td>
 					<code><?php echo site_url(); ?></code>
-					<input type="text" name="<?php echo $this->plugin_slug; ?>_ok_url" id="ok_url" class="regular-text" maxlength="255" placeholder="/<?php echo $this->plugin_slug; ?>" value="<?php echo get_option( $this->plugin_slug . '_ok_url' ); ?>"/>
+					<input type="text" name="<?php echo $this->plugin_slug; ?>_ok_url" id="ok_url" class="regular-text" maxlength="255" value="<?php echo get_option( $this->plugin_slug . '_ok_url' ); ?>"/>
 					<p class="description"><?php _e( 'Visitor is redirected to this URL on successful payment', $this->plugin_slug ); ?></p>
 				</td>
 			</tr>
@@ -50,7 +50,7 @@
 				<th scope="row"><label for="fail_url"><?php _e( 'URL for failed payment', $this->plugin_slug ); ?></label></th>
 				<td>
 					<code><?php echo site_url(); ?></code>
-					<input type="text" name="<?php echo $this->plugin_slug; ?>_fail_url" id="fail_url" class="regular-text" maxlength="255" placeholder="/<?php echo $this->plugin_slug; ?>" value="<?php echo get_option( $this->plugin_slug . '_fail_url' ); ?>"/>
+					<input type="text" name="<?php echo $this->plugin_slug; ?>_fail_url" id="fail_url" class="regular-text" maxlength="255" value="<?php echo get_option( $this->plugin_slug . '_fail_url' ); ?>"/>
 					<p class="description"><?php _e( 'Visitor is redirected to this URL on failed payment', $this->plugin_slug ); ?></p>
 				</td>
 			</tr>
