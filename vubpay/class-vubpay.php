@@ -407,10 +407,29 @@ class Vubpay {
 
 	public function process_response() {
 
-		$order_id = intval( $_REQUEST['oid'] );
-		$trans_id = sanitize_text_field( $_REQUEST['TransId'] );
-		$server_data = $request_data = '';
+		$order_id  = intval( $_REQUEST['oid'] );
+		$client_id = get_option( $this->plugin_slug . '_client_id');
 
+		// Check response hash
+		$hash = implode('', array(
+			$client_id,
+			$order_id,
+		    $_POST['AuthCode'],
+		    $_POST['ProcReturnCode'],
+		    $_POST['Response'],
+		    $_POST['mdStatus'],
+		    $_POST['cavv'],
+		    $_POST['eci'],
+		    $_POST['md'],
+		    $_POST['rnd'],
+			get_option( $this->plugin_slug . '_store_key' ),
+		));
+		$hash = base64_encode(pack('H*', sha1($hash)));
+
+		if ( $hash != $_POST['HASH'] )
+			return '<div id="message" class="error"><p>Wrong hash.</p></div>';
+
+		$server_data = $request_data = '';
 		foreach ( $_SERVER as $key => $value )
 			$server_data .= "$key: $value\n";
 		foreach ( $_REQUEST as $key => $value )
