@@ -128,7 +128,7 @@ class Vubpay {
 			'query_var'          => true,
 			'rewrite'            => array( 'slug' => $this->plugin_slug ),
 			'capability_type'    => 'post',
-			'capabilities'       => array( 'create_posts' => true ),
+			'capabilities'       => array( 'create_posts' => false ),
 			'map_meta_cap'       => false, // Disable Edit/Delete
 			'has_archive'        => true,
 			'hierarchical'       => false,
@@ -336,6 +336,7 @@ class Vubpay {
 		$amount      = ! empty( $_POST['amount'] ) ? intval( $_POST['amount'] ) : '';
 		$description = ! empty( $_POST['description'] ) ? esc_html( $_POST['description'] ) : '';
 
+		$server_data = $request_data = '';
 		foreach ( $_SERVER as $key => $value )
 			$server_data .= "$key: $value\n";
 		foreach ( $_REQUEST as $key => $value )
@@ -343,17 +344,19 @@ class Vubpay {
 
 		// Save payment request
 		$post = array(
-			'post_title'    => __( 'Payment ', $this->plugin_slug ),
-			'post_content'  => "REQUEST DATA\n$request_data\n-----\n\n$server_data\n-----\n",
-			'post_type'     => $this->plugin_slug,
-			'post_status'   => 'publish',
-			'post_category' => array( 'pending' ),
+			'post_title'   => __( 'Payment ', $this->plugin_slug ),
+			'post_content' => "REQUEST DATA\n$request_data\n-----\n\n$server_data\n-----\n",
+			'post_type'    => $this->plugin_slug,
+			'post_status'  => 'publish',
+			'tax_input'    => array( 'status' => 'pending' ),
 		);
 
 		$order_id = wp_insert_post( $post );
 
 		if ( 1 > $order_id )
 			wp_die( __( "Couldn't save payment. Please, try again.", $this->plugin_slug ) );
+
+		add_post_meta( $order_id, 'amount', $amount, true );
 
 		$rnd         = uniqid();
 		$trantype    = 'Auth';
@@ -438,18 +441,22 @@ class Vubpay {
 		switch ( strtolower( $_REQUEST['Response'] ) ) {
 			case 'approved':
 				$msg = __( '<div id="message" class="success"><p>Payment successful. Thank you. Have a nice day.</p></div>', $this->plugin_slug );
+				$status = 'success';
 				break;
 		
 			case 'declined':
 				$msg = '<div id="message" class="error"><p>Payment was declined. ' . sanitize_text_field( $_POST['ErrMsg'] ) . '</p></div>';
+				$status = 'aborted';
 				break;
 		
 			case 'error':
 				$msg = '<div id="message" class="error"><p>Payment error. ' . sanitize_text_field( $_POST['ErrMsg'] ) . '</p></div>';
+				$status = 'failed';
 				break;
 		
 			default:
 				$msg = __( '<div id="message" class="error"><p>Payment failed. Unknown response from bank gateway.</p></div>', $this->plugin_slug );
+				$status = 'failed';
 		}
 
 		// Save response
@@ -458,6 +465,7 @@ class Vubpay {
 			'post_title'    => __( 'Payment ', $this->plugin_slug ) . $order_id,
 			'post_content'  => get_post( $order_id )->post_content . "-----\nRESPONSE DATA\n$request_data\n-----\n\n$server_data",
 			'post_password' => sanitize_text_field( $_POST['HASH'] ),
+			'tax_input'     => array( 'status' => $status ),
 		);
 
 		wp_update_post( $post );
