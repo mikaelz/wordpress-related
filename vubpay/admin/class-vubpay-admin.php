@@ -51,6 +51,10 @@ class Vubpay_Admin {
 		$plugin_basename = plugin_basename( plugin_dir_path( realpath( dirname( __FILE__ ) ) ) . $this->plugin_slug . '.php' );
 		add_filter( 'plugin_action_links_' . $plugin_basename, array( $this, 'add_action_links' ) );
 
+		// Change listing
+		add_filter( 'manage_'.$this->plugin_slug.'_posts_columns', array( $this, 'listing_head' ));
+		add_action( 'manage_'.$this->plugin_slug.'_posts_custom_column', array( $this, 'listing_content' ), 10, 2 );
+
 	}
 
 	/**
@@ -68,6 +72,51 @@ class Vubpay_Admin {
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * Change listing table header columns
+	 *
+	 * @param	array	$defaults
+	 *
+	 * @return	array
+	 **/
+	function listing_head( $defaults ) {
+
+		$defaults = array(
+			'cb'     => '<input type="checkbox"/>',
+			'title'  => __( 'Title', $this->plugin_slug),
+			'status' => __( 'Status', $this->plugin_slug),
+			'amount' => __( 'Amount', $this->plugin_slug),
+			'author' => __( 'Author', $this->plugin_slug),
+			'date'   => __( 'Date', $this->plugin_slug),
+		);
+
+		return $defaults;
+	}
+
+	/**
+	 * Change listing table content columns
+	 *
+	 * @param	string	$column_name
+	 * @param	integer	$post_id
+	 *
+	 * @return	array
+	 **/
+	function listing_content( $column_name, $post_id ) {
+
+		switch ( $column_name ) {
+			case 'status':
+				$terms = wp_get_object_terms( $post_id, 'status' );
+				echo $terms[0]->name;
+				break;
+
+			case 'amount':
+				echo get_post_meta( $post_id, 'amount', true );
+				break;
+		
+		}
+
 	}
 
 	/**
@@ -241,7 +290,7 @@ class Vubpay_Admin {
 		}
 
 		return '
-&lt;form name="btn-vubecard" id="btn-vubecard" class="btn-vubecard" action="'.site_url( $this->plugin_slug ).'/?action=request" method="post"&gt;
+&lt;form name="btn-vubecard" id="btn-vubecard" class="btn-vubecard" action="'.site_url().'/?action=request" method="post"&gt;
 ' . implode("\n", $inputs) . '
 '."\t".'&lt;button type="submit"&gt;' . $btn_text . '&lt;/button&gt;
 &lt;/form&gt;';
