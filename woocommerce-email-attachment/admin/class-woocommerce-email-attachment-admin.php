@@ -151,19 +151,31 @@ class Woocommerce_Email_Attachment_Admin {
 	 */
 	public function display_plugin_admin_page() {
 		if ( isset( $_POST['processing_order_attachment'] ) ) {
-			$attachments = array();
-			foreach ( $_POST['processing_order_attachment'] as $attachment ) {
-				if ( is_file( WP_CONTENT_DIR . $attachment ) ) {
-					$attachments[] = $attachment;
-				}
-			}
-
-			update_option( '_wc_processing_order_email_attachments', $attachments );
+			$this->save_attachments();
 		}
 
 		$processing_order_attachments = get_option( '_wc_processing_order_email_attachments' );
 
 		include_once( 'views/admin.php' );
+	}
+
+	private function save_attachments() {
+
+		if ( ! isset( $_POST['_wpnonce'] ) )
+				return;
+
+		if ( ! wp_verify_nonce( $_POST['_wpnonce'], $this->plugin_slug . '-admin' ) )
+				return;
+
+		$attachments = array();
+		foreach ( $_POST['processing_order_attachment'] as $attachment ) {
+			if ( is_file( WP_CONTENT_DIR . $attachment ) ) {
+				$attachments[] = $attachment;
+			}
+		}
+
+		update_option( '_wc_processing_order_email_attachments', $attachments );
+
 	}
 
 	/**
