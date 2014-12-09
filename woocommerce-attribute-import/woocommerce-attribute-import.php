@@ -43,10 +43,10 @@ class wai {
     private static $instance = null;
 
     // DB login credentials for data export
-    private static $db_host = 'DB_HOST';
-    private static $db_user = 'DB_USER';
-    private static $db_pass = 'DB_PASS';
-    private static $db_name = 'DB_NAME';
+    private static $db_host = 'VIRTUEMART_HOST';
+    private static $db_user = 'VIRTUEMART_USER';
+    private static $db_pass = 'VIRTUEMART_PASS';
+    private static $db_name = 'VIRTUEMART_NAME';
     private static $db_prefix = 'VIRTUEMART_PREFIX';
 
     private function __construct() {

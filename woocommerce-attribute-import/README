@@ -1,0 +1,9 @@
+
+There's no export, it directly connect to the Virtuemart database.
+
+You gonna need to change the credentials on line 46:
+$db_host = 'VIRTUEMART_HOST';
+$db_user = 'VIRTUEMART_USER';
+$db_pass = 'VIRTUEMART_PASS';
+$db_name = 'VIRTUEMART_NAME';
+$db_prefix = 'VIRTUEMART_PREFIX';
