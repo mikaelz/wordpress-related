@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+add_action('woocommerce_checkout_order_processed', array(new iKrosOrder(), 'upload_to_ikros'), 10, 2);
+
 class iKrosOrder
 {
     private $api_email;
@@ -19,8 +21,6 @@ class iKrosOrder
     {
         $this->api_email = 'IKROS_EMAIL';
         $this->api_token = 'IKROS_TOKEN';
-
-        add_action('woocommerce_checkout_order_processed', array($this, 'upload_to_ikros'), 10, 2);
     }
 
     /**
@@ -146,6 +146,4 @@ class iKrosOrder
         return sprintf("[%s]", json_encode($data) );
     }
 }
-
-new iKrosOrder();
 
