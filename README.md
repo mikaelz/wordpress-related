@@ -1,4 +1,4 @@
-wp-plugin
+WordPress plugins, workarounds and code snippets
 =========
 
-WordPress plugins
+Code that I sometimes need to re-use.
