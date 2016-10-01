@@ -29,8 +29,12 @@ class OptionalAdvancePay
         $inStock = true;
 
         foreach (WC()->cart->cart_contents as $item) {
+            $product_id = $item['product_id'];
+            if (isset($item['variation_id']) && $item['variation_id'] > 0) {
+                $product_id = $item['variation_id'];
+            }
             $product = new \WC_Product_Factory();
-            $product = $product->get_product($item['product_id']);
+            $product = $product->get_product($product_id);
             if ($item['quantity'] > $product->get_stock_quantity()) {
                 $inStock = false;
                 break;
