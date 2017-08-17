@@ -136,7 +136,7 @@ class Woocommerce_Email_Attachment_Admin {
 		$this->screen_hook_suffix = add_submenu_page(
 			'woocommerce',
 			__( 'Woocommerce Email Attachment', $this->plugin_slug ),
-			__( 'WC Email Attachment', $this->plugin_slug ),
+			__( 'Email Attachment', $this->plugin_slug ),
 			'upload_files',
 			$this->plugin_slug,
 			array( $this, 'display_plugin_admin_page' )
