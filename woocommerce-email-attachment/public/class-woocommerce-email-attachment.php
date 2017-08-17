@@ -246,17 +246,16 @@ class Woocommerce_Email_Attachment {
 
 	/**
 	 * Add attachment media files to phpmailer
-	 * Applied at /woocommerce/includes/abstracts/abstract-wc-email.php:247
 	 *
 	 * @since   1.0.0
      *
 	 * @param	array	$attachments
-	 * @param	string	$payment_method_id
+	 * @param	string	$email_method_id
      * @return	array
 	 */
-	public function add_attachment( $attachments, $payment_method_id ) {
+	public function add_attachment( $attachments, $email_method_id ) {
 
-		if ( 'customer_processing_order' == $payment_method_id ) {
+		if ( 'customer_processing_order' == $email_method_id ) {
 			foreach ( get_option( '_wc_processing_order_email_attachments' ) as $attachment ) {
 				$attachments[] = WP_CONTENT_DIR . $attachment;
 			}
