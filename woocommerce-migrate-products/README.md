@@ -2,6 +2,8 @@
 
 **This is not a plugin**. Place it for example in `import/` dir.
 
+Uses https://github.com/woocommerce/wc-api-php
+
 You gonna need API access tokens from *WooCommerce* -> *Settings* -> *API*
 
 ![](wc-api-settings.png)
