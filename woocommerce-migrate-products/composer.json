@@ -1,0 +1,15 @@
+{
+    "name": "mikaelz/woocommerce-migrate-products",
+    "description": "WooCommerce2WooCommerce product migration",
+    "authors": [
+        {
+            "name": "Michal Zuber",
+            "email": "info@nevilleweb.sk"
+        }
+    ],
+    "license": "MIT",
+    "keywords": ["migrate", "tool"],
+    "require": {
+        "automattic/woocommerce": "^1.3"
+    }
+}
