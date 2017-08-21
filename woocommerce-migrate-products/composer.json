@@ -1,6 +1,7 @@
 {
     "name": "mikaelz/woocommerce-migrate-products",
     "description": "WooCommerce2WooCommerce product migration",
+    "php": "^7.0",
     "authors": [
         {
             "name": "Michal Zuber",
