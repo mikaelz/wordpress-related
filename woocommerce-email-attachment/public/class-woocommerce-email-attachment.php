@@ -255,7 +255,7 @@ class Woocommerce_Email_Attachment {
 	 */
 	public function add_attachment( $attachments, $email_method_id ) {
 
-		if ( 'customer_processing_order' == $email_method_id ) {
+		if ( in_array($email_method_id, array( 'customer_processing_order', 'customer_on_hold_order' ) ) ) {
 			foreach ( get_option( '_wc_processing_order_email_attachments' ) as $attachment ) {
 				$attachments[] = WP_CONTENT_DIR . $attachment;
 			}
